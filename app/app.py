@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, render_template_string
+from prometheus_flask_exporter import PrometheusMetrics
 import redis
 import os
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
 
 # Resolve connection details via environment or default to internal service discovery
 redis_host = os.environ.get('REDIS_HOST', 'redis-service')
