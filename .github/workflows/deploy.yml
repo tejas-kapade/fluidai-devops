@@ -25,7 +25,7 @@ jobs:
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: tejas90@project-28225aef-d526-47fe-81e.iam.gserviceaccount.com
+          service_account: github-actions-sa@project-28225aef-d526-47fe-81e.iam.gserviceaccount.com
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
