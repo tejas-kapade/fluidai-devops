@@ -1,15 +1,29 @@
-from flask import Flask, jsonify, render_template_string
-from prometheus_flask_exporter import PrometheusMetrics
+from flask import Flask, Response, jsonify, render_template_string, request
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, generate_latest
 import redis
 import os
 
 app = Flask(__name__)
-metrics = PrometheusMetrics(app)
+request_counter = Counter(
+  'fluidai_http_requests_total',
+  'Total HTTP requests served by the FluidAI demo app',
+  ['method', 'endpoint', 'http_status']
+)
+hit_counter = Counter(
+  'fluidai_count_hits_total',
+  'Total count button/API hits served by the FluidAI demo app'
+)
 
 # Resolve connection details via environment or default to internal service discovery
 redis_host = os.environ.get('REDIS_HOST', 'redis-service')
 
 r = redis.Redis(host=redis_host, port=6379, decode_responses=True)
+
+@app.after_request
+def track_request(response):
+  endpoint = request.endpoint or 'unknown'
+  request_counter.labels(request.method, endpoint, response.status_code).inc()
+  return response
 
 @app.route('/')
 def hello():
@@ -172,12 +186,17 @@ def health():
 def count():
   try:
     hits = r.incr('hits')
+    hit_counter.inc()
     return jsonify({
       'hits': hits,
       'message': f'This page has been visited {hits} times'
     }), 200
   except Exception as e:
     return jsonify({'status': 'error', 'redis': str(e)}), 503
+
+@app.route('/metrics')
+def metrics():
+  return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=5000)
