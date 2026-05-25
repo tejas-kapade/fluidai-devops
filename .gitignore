@@ -1,2 +1,3 @@
 gha-creds-*.json
 gha-kubeconfig-*
+.env
