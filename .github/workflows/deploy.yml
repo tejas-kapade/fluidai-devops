@@ -1,4 +1,4 @@
-name: Build, Push Docker Image, Deploy to GKE
+name: Deploy to GKE
 
 on:
   push:
@@ -8,47 +8,36 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
 
     env:
-      IMAGE: gcr.io/${{ secrets.GCP_PROJECT }}/fluidai-demo:${{ github.sha }}
+      IMAGE: metejas/fluidai-demo:latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud with WIF
         uses: google-github-actions/auth@v3
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: tejas90@project-28225aef-d526-47fe-81e.iam.gserviceaccount.com
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
         with:
-          project_id: ${{ secrets.GCP_PROJECT }}
-          export_default_credentials: true
-
-      - name: Configure Docker for GCR
-        run: |
-          gcloud auth configure-docker --quiet
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./app
-          file: ./app/Dockerfile
-          push: true
-          tags: ${{ env.IMAGE }}
+          project_id: ${{ GCP_PROJECT_ID }}
 
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@v3
         with:
-          cluster_name: ${{ secrets.GKE_CLUSTER }}
-          location: ${{ secrets.GKE_LOCATION }}
-          project_id: ${{ secrets.GCP_PROJECT }}
+          cluster_name: ${{ GKE_CLUSTER_NAME }}
+          location: ${{ GKE_CLUSTER_LOCATION }}
+          project_id: ${{ GCP_PROJECT_ID }}
 
       - name: Deploy Kubernetes manifests
         run: |
@@ -58,4 +47,5 @@ jobs:
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/deployment.yaml
           kubectl set image deployment/fluidai-app app=${{ env.IMAGE }} -n fluidai
+          kubectl rollout restart deployment/fluidai-app -n fluidai
           kubectl rollout status deployment/fluidai-app -n fluidai
