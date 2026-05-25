@@ -20,6 +20,7 @@ spec:
       containers:
       - name: app
         image: metejas/fluidai-demo:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
         env:
