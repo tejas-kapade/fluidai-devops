@@ -62,4 +62,4 @@ jobs:
           kubectl apply -f k8s/deployment.yaml
           kubectl set image deployment/fluidai-app app=${{ env.IMAGE }} -n fluidai
           kubectl rollout restart deployment/fluidai-app -n fluidai
-          kubectl rollout status deployment/fluidai-app -n fluidai
+          kubectl rollout status deployment/fluidai-app -n fluidai --timeout=180s
