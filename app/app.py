@@ -11,15 +11,15 @@ r = redis.Redis(host=redis_host, port=6379, decode_responses=True)
 
 @app.route('/')
 def hello():
- return jsonify({'message': 'FluidAI DevOps Demo', 'status': 'ok'})
+  return jsonify({'message': 'FluidAI DevOps Demo', 'status': 'ok'})
 
 @app.route('/health')
 def health():
- try:
- r.ping()
- return jsonify({'status': 'healthy', 'redis': 'connected'}), 200
- except Exception as e:
- return jsonify({'status': 'unhealthy', 'redis': str(e)}), 503
+  try:
+    r.ping()
+    return jsonify({'status': 'healthy', 'redis': 'connected'}), 200
+  except Exception as e:
+    return jsonify({'status': 'unhealthy', 'redis': str(e)}), 503
 
 @app.route('/count')
 def count():
