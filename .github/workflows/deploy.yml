@@ -15,7 +15,8 @@ jobs:
       id-token: write
 
     env:
-      IMAGE: metejas/fluidai-demo:latest
+      IMAGE: metejas/fluidai-demo:${{ github.sha }}
+      LATEST_IMAGE: metejas/fluidai-demo:latest
 
     steps:
       - name: Checkout repository
@@ -45,7 +46,9 @@ jobs:
           file: ./app/Dockerfile
           push: true
           no-cache: true
-          tags: ${{ env.IMAGE }}
+          tags: |
+            ${{ env.IMAGE }}
+            ${{ env.LATEST_IMAGE }}
 
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@v3
