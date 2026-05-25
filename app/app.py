@@ -182,6 +182,14 @@ def health():
   except Exception as e:
     return jsonify({'status': 'unhealthy', 'redis': str(e)}), 503
 
+@app.route('/live')
+def live():
+  return jsonify({'status': 'alive'}), 200
+
+@app.route('/ready')
+def ready():
+  return jsonify({'status': 'ready'}), 200
+
 @app.route('/count')
 def count():
   try:
