@@ -44,6 +44,7 @@ jobs:
           context: ./app
           file: ./app/Dockerfile
           push: true
+          no-cache: true
           tags: ${{ env.IMAGE }}
 
       - name: Get GKE credentials
